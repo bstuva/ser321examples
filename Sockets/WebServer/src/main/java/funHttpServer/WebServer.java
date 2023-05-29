@@ -16,6 +16,10 @@ write a response back
 
 package funHttpServer;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
@@ -25,8 +29,6 @@ import java.util.Random;
 import java.util.Map;
 import java.util.LinkedHashMap;
 import java.nio.charset.Charset;
-import org.json.JSONObject;
-import org.json.JSONArray;
 
 
 class WebServer {
@@ -259,20 +261,20 @@ class WebServer {
 
             for (int i = 0; i < jay.length(); i++) {
 
-              JSONObject request = jay.getJSONObject(i);
+              JSONObject gitHubRequest = jay.getJSONObject(i);
 
-              String fullName = jay.getString("full_name");
+              String fullName = jay.getString(Integer.parseInt("full_name"));
 
-              int id = jay.getInt("id");
+              int id = jay.getInt(Integer.parseInt("id"));
 
-              JSONObject owner = jay.getJSONObject("owner");
+              JSONObject owner = jay.getJSONObject(Integer.parseInt("owner"));
 
-              String owerlogin = owner.getString("login");
+              String ownerlogin = owner.getString("login");
 
               // Append the repo information to the response
               responseBuilder.append("Full Name: ").append(fullName).append("<br>");
               responseBuilder.append("ID: ").append(id).append("<br>");
-              responseBuilder.append("Owner: ").append(ownerLogin).append("<br><br>");
+              responseBuilder.append("Owner: ").append(ownerlogin).append("<br><br>");
             }
 
             builder.append("HTTP/1.1 200 OK\n");
