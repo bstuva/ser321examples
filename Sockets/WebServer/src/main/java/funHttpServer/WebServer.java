@@ -221,8 +221,6 @@ class WebServer {
             builder.append("\n");
             builder.append("Result is: " + result);
 
-            // TODO: Include error handling here with a correct error code and
-            // a response that makes sense
           }
           //Handling invalid number format error
           catch (NumberFormatException nfe){
@@ -258,8 +256,6 @@ class WebServer {
              JSONArray importedJSON = new JSONArray(json);
              JSONArray gatheredInfo = new JSONArray();
 
-            StringBuilder responseBuilder = new StringBuilder();
-
             for (int i = 0; i < importedJSON.length(); i++) {
 
               JSONObject info = importedJSON.getJSONObject(i);
@@ -278,6 +274,8 @@ class WebServer {
               results.put("name", fullName);
               results.put("id", id);
               results.put("owner", login);
+
+              gatheredInfo.put(results); // Add the results to the gatheredInfo array
             }
 
             builder.append("HTTP/1.1 200 OK\n");
