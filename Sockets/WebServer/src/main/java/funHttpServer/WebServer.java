@@ -256,7 +256,7 @@ class WebServer {
             String json = fetchURL("https://api.github.com/" + query_pairs.get("query"));
 
              JSONArray importedJSON = new JSONArray(json);
-             JSONArray sortedInfo = new JSONArray();
+             JSONArray gatheredInfo = new JSONArray();
 
             StringBuilder responseBuilder = new StringBuilder();
 
@@ -272,10 +272,12 @@ class WebServer {
 
               String login = owner.getString("login");
 
+              JSONObject results =  new JSONObject();
+
               // Append the repo information to the response
-              responseBuilder.append("Full Name: ").append(fullName).append("<br>");
-              responseBuilder.append("ID: ").append(id).append("<br>");
-              responseBuilder.append("Owner: ").append(login).append("<br><br>");
+              results.put("name", fullName);
+              results.put("id", id);
+              results.put("owner", login);
             }
 
             builder.append("HTTP/1.1 200 OK\n");
@@ -284,6 +286,20 @@ class WebServer {
             builder.append("Check the todos mentioned in the Java source file");
             // TODO: Parse the JSON returned by your fetch and create an appropriate
             // response based on what the assignment document asks for
+
+              for(int i = 0; i < gatheredInfo.length(); i++){
+
+                JSONObject repoResults = gatheredInfo.getJSONObject(i);
+
+                String resultsNAME = repoResults.getString("name");
+
+                int resultsID = repoResults.getInt("id");
+
+                String resultsOwner = repoResults.getString("owner");
+
+                builder.append(resultsNAME + " " + resultsID + " " + resultsOwner);
+
+              }
 
           } catch (JSONException e) {
             // Handle JSON parsing errors
