@@ -240,7 +240,6 @@ class WebServer {
           }
 
         } else if (request.contains("github?")) {
-          try {
             // pulls the query from the request and runs it with GitHub's REST API
             // check out https://docs.github.com/rest/reference/
             //
@@ -249,32 +248,34 @@ class WebServer {
             // "Owner's repo is named RepoName. Example: find RepoName's contributors" translates to
             //     "/repos/OWNERNAME/REPONAME/contributors"
 
-            Map<String, String> query_pairs = new LinkedHashMap<String, String>();
+            Map<String, String> query_pairs;
             query_pairs = splitQuery(request.replace("github?", ""));
 
+            try {
 
             String json = fetchURL("https://api.github.com/" + query_pairs.get("query"));
 
-            JSONArray jay = new JSONArray(json);
+             JSONArray importedJSON = new JSONArray(json);
+             JSONArray sortedInfo = new JSONArray();
 
             StringBuilder responseBuilder = new StringBuilder();
 
-            for (int i = 0; i < jay.length(); i++) {
+            for (int i = 0; i < importedJSON.length(); i++) {
 
-              JSONObject gitHubRequest = jay.getJSONObject(i);
+              JSONObject info = importedJSON.getJSONObject(i);
 
-              String fullName = jay.getString(Integer.parseInt("full_name"));
+              String fullName = info.getString("full_name");
 
-              int id = jay.getInt(Integer.parseInt("id"));
+              int id = info.getInt("id");
 
-              JSONObject owner = jay.getJSONObject(Integer.parseInt("owner"));
+              JSONObject owner = info.getJSONObject("owner");
 
-              String ownerlogin = owner.getString("login");
+              String login = owner.getString("login");
 
               // Append the repo information to the response
               responseBuilder.append("Full Name: ").append(fullName).append("<br>");
               responseBuilder.append("ID: ").append(id).append("<br>");
-              responseBuilder.append("Owner: ").append(ownerlogin).append("<br><br>");
+              responseBuilder.append("Owner: ").append(login).append("<br><br>");
             }
 
             builder.append("HTTP/1.1 200 OK\n");
@@ -290,12 +291,6 @@ class WebServer {
             builder.append("Content-Type: text/html; charset=utf-8\n");
             builder.append("\n");
             builder.append("Error parsing JSON response: ").append(e.getMessage());
-          } catch (IOException e) {
-            // Handle IO errors during API request
-            builder.append("HTTP/1.1 500 Internal Server Error\n");
-            builder.append("Content-Type: text/html; charset=utf-8\n");
-            builder.append("\n");
-            builder.append("IO error occurred: ").append(e.getMessage());
           } catch (Exception e) {
             // Handle any other exceptions
             builder.append("HTTP/1.1 500 Internal Server Error\n");
