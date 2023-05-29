@@ -223,21 +223,76 @@ class WebServer {
 
           }
           //Handling invalid number format error
-          catch (NumberFormatException nfe){
+          catch (NumberFormatException nfe) {
             builder.append("HTTP/1.1 400 Bad Request\n");
             builder.append("Content-Type: text/html; charset=utf-8\n");
             builder.append("\n");
             builder.append("Invalid number format entered");
           }
           //Handle any other exceptions
-          catch (Exception e){
+          catch (Exception e) {
             builder.append("HTTP/1.1 500 Internal Server Error\n");
             builder.append("Content-Type: text/html; charset=utf-8\n");
             builder.append("\n");
             builder.append("An error occurred");
           }
+        } else if (request.contains("wordcount?")) {
+          Map<String, String> queryPairs = splitQuery(request.replace("wordcount?", ""));
+          String text = queryPairs.get("text");
 
-        } else if (request.contains("github?")) {
+          if (text == null || text.trim().isEmpty()) {
+            builder.append("HTTP/1.1 400 Bad Request\n");
+            builder.append("Content-Type: text/html; charset=utf-8\n");
+            builder.append("\n");
+            builder.append("No text provided. Please provide a valid text to count the words.");
+            response = builder.toString().getBytes();
+            return response;
+          }
+
+          try {
+            String[] words = text.trim().split("\\s+"); // Split the text by whitespace characters
+            int wordCount = words.length;
+
+            builder.append("HTTP/1.1 200 OK\n");
+            builder.append("Content-Type: text/html; charset=utf-8\n");
+            builder.append("\n");
+            builder.append("The text contains ").append(wordCount).append(" words.");
+          } catch (Exception e) {
+            builder.append("HTTP/1.1 500 Internal Server Error\n");
+            builder.append("Content-Type: text/html; charset=utf-8\n");
+            builder.append("\n");
+            builder.append("An error occurred while counting the words: ").append(e.getMessage());
+          }
+        } else if (request.contains("temperature?")) {
+          Map<String, String> queryPairs = splitQuery(request.replace("temperature?", ""));
+          double value = Double.parseDouble(queryPairs.get("value"));
+          String unit = queryPairs.get("unit").toUpperCase();
+
+          double result;
+          String responseMessage;
+
+          if (unit.equals("C")) {
+            result = (value * 9 / 5) + 32; // Celsius to Fahrenheit conversion
+            responseMessage = value + " degrees Celsius is equal to " + result + " degrees Fahrenheit.";
+          } else if (unit.equals("F")) {
+            result = (value - 32) * 5 / 9; // Fahrenheit to Celsius conversion
+            responseMessage = value + " degrees Fahrenheit is equal to " + result + " degrees Celsius.";
+          } else {
+            builder.append("HTTP/1.1 400 Bad Request\n");
+            builder.append("Content-Type: text/html; charset=utf-8\n");
+            builder.append("\n");
+            builder.append("Invalid unit provided. Please provide 'C' for Celsius or 'F' for Fahrenheit.");
+            response = builder.toString().getBytes();
+            return response;
+          }
+
+          builder.append("HTTP/1.1 200 OK\n");
+          builder.append("Content-Type: text/html; charset=utf-8\n");
+          builder.append("\n");
+          builder.append(responseMessage);
+        }
+
+        else if (request.contains("github?")) {
             // pulls the query from the request and runs it with GitHub's REST API
             // check out https://docs.github.com/rest/reference/
             //
