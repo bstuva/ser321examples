@@ -281,7 +281,6 @@ class WebServer {
             builder.append("HTTP/1.1 200 OK\n");
             builder.append("Content-Type: text/html; charset=utf-8\n");
             builder.append("\n");
-            builder.append("Check the todos mentioned in the Java source file");
             // response based on what the assignment document asks for
 
               for(int i = 0; i < gatheredInfo.length(); i++){
@@ -295,6 +294,7 @@ class WebServer {
                 String resultsOwner = repoResults.getString("owner");
 
                 builder.append(resultsNAME + " " + resultsID + " " + resultsOwner);
+                builder.append("\n");
 
               }
 
