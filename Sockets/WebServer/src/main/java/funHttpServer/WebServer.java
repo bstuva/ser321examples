@@ -235,35 +235,76 @@ class WebServer {
           }
 
         } else if (request.contains("github?")) {
-          // pulls the query from the request and runs it with GitHub's REST API
-          // check out https://docs.github.com/rest/reference/
-          //
-          // HINT: REST is organized by nesting topics. Figure out the biggest one first,
-          //     then drill down to what you care about
-          // "Owner's repo is named RepoName. Example: find RepoName's contributors" translates to
-          //     "/repos/OWNERNAME/REPONAME/contributors"
+          try {
+            // pulls the query from the request and runs it with GitHub's REST API
+            // check out https://docs.github.com/rest/reference/
+            //
+            // HINT: REST is organized by nesting topics. Figure out the biggest one first,
+            //     then drill down to what you care about
+            // "Owner's repo is named RepoName. Example: find RepoName's contributors" translates to
+            //     "/repos/OWNERNAME/REPONAME/contributors"
 
-          Map<String, String> query_pairs = new LinkedHashMap<String, String>();
-          query_pairs = splitQuery(request.replace("github?", ""));
-          String json = fetchURL("https://api.github.com/" + query_pairs.get("query"));
-          System.out.println(json);
+            Map<String, String> query_pairs = new LinkedHashMap<String, String>();
+            query_pairs = splitQuery(request.replace("github?", ""));
 
-          builder.append("HTTP/1.1 200 OK\n");
-          builder.append("Content-Type: text/html; charset=utf-8\n");
-          builder.append("\n");
-          builder.append("Check the todos mentioned in the Java source file");
-          // TODO: Parse the JSON returned by your fetch and create an appropriate
-          // response based on what the assignment document asks for
 
+            String json = fetchURL("https://api.github.com/" + query_pairs.get("query"));
+
+            JSONArray jay = new JSONArray(json);
+
+            StringBuilder responseBuilder = new StringBuilder();
+
+            for (int i = 0; i < jay.length(); i++) {
+
+              JSONObject request = jay.getJSONObject(i);
+
+              String fullName = jay.getString("full_name");
+
+              int id = jay.getInt("id");
+
+              JSONObject owner = jay.getJSONObject("owner");
+
+              String owerlogin = owner.getString("login");
+
+              // Append the repo information to the response
+              responseBuilder.append("Full Name: ").append(fullName).append("<br>");
+              responseBuilder.append("ID: ").append(id).append("<br>");
+              responseBuilder.append("Owner: ").append(ownerLogin).append("<br><br>");
+            }
+
+            builder.append("HTTP/1.1 200 OK\n");
+            builder.append("Content-Type: text/html; charset=utf-8\n");
+            builder.append("\n");
+            builder.append("Check the todos mentioned in the Java source file");
+            // TODO: Parse the JSON returned by your fetch and create an appropriate
+            // response based on what the assignment document asks for
+
+          } catch (JSONException e) {
+            // Handle JSON parsing errors
+            builder.append("HTTP/1.1 400 Bad Request\n");
+            builder.append("Content-Type: text/html; charset=utf-8\n");
+            builder.append("\n");
+            builder.append("Error parsing JSON response: ").append(e.getMessage());
+          } catch (IOException e) {
+            // Handle IO errors during API request
+            builder.append("HTTP/1.1 500 Internal Server Error\n");
+            builder.append("Content-Type: text/html; charset=utf-8\n");
+            builder.append("\n");
+            builder.append("IO error occurred: ").append(e.getMessage());
+          } catch (Exception e) {
+            // Handle any other exceptions
+            builder.append("HTTP/1.1 500 Internal Server Error\n");
+            builder.append("Content-Type: text/html; charset=utf-8\n");
+            builder.append("\n");
+            builder.append("An error occurred: ").append(e.getMessage());
+          }
         } else {
           // if the request is not recognized at all
-
           builder.append("HTTP/1.1 400 Bad Request\n");
           builder.append("Content-Type: text/html; charset=utf-8\n");
           builder.append("\n");
           builder.append("I am not sure what you want me to do...");
         }
-
         // Output
         response = builder.toString().getBytes();
       }
