@@ -265,16 +265,37 @@ class WebServer {
           }
         } else if (request.contains("temperature?")) {
           Map<String, String> queryPairs = splitQuery(request.replace("temperature?", ""));
-          double value = Double.parseDouble(queryPairs.get("value"));
-          String unit = queryPairs.get("unit").toUpperCase();
+          String valueStr = queryPairs.get("value");
+          String unit = queryPairs.get("unit");
+
+          if (valueStr == null || unit == null) {
+            builder.append("HTTP/1.1 400 Bad Request\n");
+            builder.append("Content-Type: text/html; charset=utf-8\n");
+            builder.append("\n");
+            builder.append("Invalid request. Please provide both 'value' and 'unit' parameters.");
+            response = builder.toString().getBytes();
+            return response;
+          }
+
+          double value;
+          try {
+            value = Double.parseDouble(valueStr);
+          } catch (NumberFormatException e) {
+            builder.append("HTTP/1.1 400 Bad Request\n");
+            builder.append("Content-Type: text/html; charset=utf-8\n");
+            builder.append("\n");
+            builder.append("Invalid value provided. Please provide a valid numerical value.");
+            response = builder.toString().getBytes();
+            return response;
+          }
 
           double result;
           String responseMessage;
 
-          if (unit.equals("C")) {
+          if (unit.equalsIgnoreCase("C")) {
             result = (value * 9 / 5) + 32; // Celsius to Fahrenheit conversion
             responseMessage = value + " degrees Celsius is equal to " + result + " degrees Fahrenheit.";
-          } else if (unit.equals("F")) {
+          } else if (unit.equalsIgnoreCase("F")) {
             result = (value - 32) * 5 / 9; // Fahrenheit to Celsius conversion
             responseMessage = value + " degrees Fahrenheit is equal to " + result + " degrees Celsius.";
           } else {
